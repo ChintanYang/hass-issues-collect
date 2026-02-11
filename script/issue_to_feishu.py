@@ -19,11 +19,12 @@ def _env(name: str, default: str | None = None) -> str:
     return value
 
 
-def _parse_github_timestamp(value: str | None) -> str | None:
+def _parse_github_timestamp(value: str | None) -> int | None:
     if not value:
         return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    return parsed.astimezone(timezone.utc).isoformat()
+    # Feishu datetime fields expect a unix timestamp in milliseconds.
+    return int(parsed.astimezone(timezone.utc).timestamp() * 1000)
 
 
 def _load_event(event_path: str) -> dict[str, Any]:
