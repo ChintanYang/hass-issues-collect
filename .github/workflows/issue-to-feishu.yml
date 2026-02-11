@@ -1,0 +1,34 @@
+name: Sync issues to Feishu
+
+# yamllint disable-line rule:truthy
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  sync-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Sync issue to Feishu Bitable
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_APP_TOKEN: ${{ secrets.FEISHU_APP_TOKEN }}
+          FEISHU_TABLE_ID: ${{ secrets.FEISHU_TABLE_ID }}
+          FEISHU_BASE_URL: ${{ secrets.FEISHU_BASE_URL }}
+          FEISHU_UPSERT: ${{ secrets.FEISHU_UPSERT }}
+          FEISHU_FIELD_ISSUE_ID: ${{ secrets.FEISHU_FIELD_ISSUE_ID }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: python3 script/issue_to_feishu.py
+
