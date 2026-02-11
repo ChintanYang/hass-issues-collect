@@ -160,8 +160,8 @@ def main() -> None:
     app_secret = _env("FEISHU_APP_SECRET")
     app_token = _env("FEISHU_APP_TOKEN")
     table_id = _env("FEISHU_TABLE_ID")
-    upsert = os.getenv("FEISHU_UPSERT", "1") == "1"
-    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID", "Issue ID")
+    upsert = (os.getenv("FEISHU_UPSERT") or "1") == "1"
+    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID") or "Issue ID"
 
     event = _load_event(event_path)
     if "issue" not in event:
