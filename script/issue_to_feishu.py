@@ -19,12 +19,11 @@ def _env(name: str, default: str | None = None) -> str:
     return value
 
 
-def _parse_github_timestamp(value: str | None) -> int | None:
+def _parse_github_timestamp(value: str | None) -> str | None:
     if not value:
         return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    # Feishu datetime fields expect a unix timestamp in milliseconds.
-    return int(parsed.astimezone(timezone.utc).timestamp() * 1000)
+    return parsed.astimezone(timezone.utc).isoformat()
 
 
 def _load_event(event_path: str) -> dict[str, Any]:
@@ -156,13 +155,14 @@ def _truncate(value: str | None, limit: int) -> str | None:
 
 def main() -> None:
     event_path = _env("GITHUB_EVENT_PATH")
-    base_url = os.getenv("FEISHU_BASE_URL") or "https://open.feishu.cn"
+    base_url = os.getenv("FEISHU_BASE_URL", "https://open.feishu.cn")
     app_id = _env("FEISHU_APP_ID")
     app_secret = _env("FEISHU_APP_SECRET")
     app_token = _env("FEISHU_APP_TOKEN")
     table_id = _env("FEISHU_TABLE_ID")
-    upsert = (os.getenv("FEISHU_UPSERT") or "1") == "1"
-    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID") or "Issue ID"
+    upsert = os.getenv("FEISHU_UPSERT", "1") == "1"
+    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID", "Issue ID")
+    ai_summary = os.getenv("ISSUE_AI_SUMMARY")
 
     event = _load_event(event_path)
     if "issue" not in event:
@@ -184,14 +184,11 @@ def main() -> None:
         "Title": issue.get("title"),
         "State": issue.get("state"),
         "URL": issue.get("html_url"),
-        "User": issue.get("user", {}).get("login"),
         "Labels": ", ".join(labels) if labels else None,
-        "Assignees": ", ".join(assignees) if assignees else None,
-        "Action": action,
         "Created At": _parse_github_timestamp(issue.get("created_at")),
         "Updated At": _parse_github_timestamp(issue.get("updated_at")),
         "Closed At": _parse_github_timestamp(issue.get("closed_at")),
-        "Body": _truncate(issue.get("body"), 5000),
+        "AI Summary": _truncate(ai_summary, 1000),
     }
 
     token = _get_tenant_token(base_url, app_id, app_secret)

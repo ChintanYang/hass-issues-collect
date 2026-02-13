@@ -1,0 +1,44 @@
+name: Issue AI summary
+
+# yamllint disable-line rule:truthy
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  models: read
+
+jobs:
+  ai-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate summary
+        id: ai_summary
+        uses: actions/ai-inference@v1.1.0
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt: |
+            You summarize GitHub issues for a maintainer.
+            Rules:
+            - Summarize in 1-3 concise sentences.
+            - Focus on the problem, expected behavior, and key context.
+            - If the issue is missing critical details, mention what is missing.
+            - Do not include markdown headers or bullet lists.
+          prompt: |
+            Title: ${{ github.event.issue.title }}
+            Body: ${{ github.event.issue.body }}
+          max-tokens: 120
+
+      - name: Sync summary to Feishu Bitable
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_APP_TOKEN: ${{ secrets.FEISHU_APP_TOKEN }}
+          FEISHU_TABLE_ID: ${{ secrets.FEISHU_TABLE_ID }}
+          FEISHU_BASE_URL: ${{ secrets.FEISHU_BASE_URL }}
+          FEISHU_UPSERT: ${{ secrets.FEISHU_UPSERT }}
+          FEISHU_FIELD_ISSUE_ID: ${{ secrets.FEISHU_FIELD_ISSUE_ID }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          ISSUE_AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
+        run: python3 script/issue_to_feishu.py
+
