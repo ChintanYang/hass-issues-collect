@@ -23,9 +23,8 @@ def _parse_github_timestamp(value: str | None) -> int | None:
     if not value:
         return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    utc_time = parsed.astimezone(timezone.utc)
-    # 飞书 API 需要 Unix 时间戳（毫秒）
-    return int(utc_time.timestamp() * 1000)
+    # Feishu datetime fields expect a unix timestamp in milliseconds.
+    return int(parsed.astimezone(timezone.utc).timestamp() * 1000)
 
 
 def _load_event(event_path: str) -> dict[str, Any]:
@@ -162,8 +161,8 @@ def main() -> None:
     app_secret = _env("FEISHU_APP_SECRET")
     app_token = _env("FEISHU_APP_TOKEN")
     table_id = _env("FEISHU_TABLE_ID")
-    upsert = os.getenv("FEISHU_UPSERT", "1") == "1"
-    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID", "Issue ID")
+    upsert = (os.getenv("FEISHU_UPSERT") or "1") == "1"
+    issue_id_field = os.getenv("FEISHU_FIELD_ISSUE_ID") or "Issue ID"
     ai_summary = os.getenv("ISSUE_AI_SUMMARY")
 
     event = _load_event(event_path)
