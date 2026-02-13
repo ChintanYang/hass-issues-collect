@@ -12,6 +12,14 @@ jobs:
   ai-summary:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.2.0
+        with:
+          python-version: "3.12"
+
       - name: Generate summary
         id: ai_summary
         uses: actions/ai-inference@v1.1.0
@@ -41,4 +49,3 @@ jobs:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           ISSUE_AI_SUMMARY: ${{ steps.ai_summary.outputs.response }}
         run: python3 script/issue_to_feishu.py
-

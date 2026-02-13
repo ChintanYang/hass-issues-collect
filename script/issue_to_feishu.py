@@ -19,11 +19,13 @@ def _env(name: str, default: str | None = None) -> str:
     return value
 
 
-def _parse_github_timestamp(value: str | None) -> str | None:
+def _parse_github_timestamp(value: str | None) -> int | None:
     if not value:
         return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    return parsed.astimezone(timezone.utc).isoformat()
+    utc_time = parsed.astimezone(timezone.utc)
+    # 飞书 API 需要 Unix 时间戳（毫秒）
+    return int(utc_time.timestamp() * 1000)
 
 
 def _load_event(event_path: str) -> dict[str, Any]:
