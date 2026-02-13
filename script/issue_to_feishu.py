@@ -184,13 +184,13 @@ def main() -> None:
         issue_id_field: str(issue.get("id")),
         "Issue Number": issue.get("number"),
         "Title": issue.get("title"),
+        "AI Summary": _truncate(ai_summary, 1000),
         "State": issue.get("state"),
         "URL": issue.get("html_url"),
         "Labels": ", ".join(labels) if labels else None,
         "Created At": _parse_github_timestamp(issue.get("created_at")),
         "Updated At": _parse_github_timestamp(issue.get("updated_at")),
         "Closed At": _parse_github_timestamp(issue.get("closed_at")),
-        "AI Summary": _truncate(ai_summary, 1000),
     }
 
     token = _get_tenant_token(base_url, app_id, app_secret)
