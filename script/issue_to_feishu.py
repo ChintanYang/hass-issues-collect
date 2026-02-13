@@ -155,7 +155,7 @@ def _truncate(value: str | None, limit: int) -> str | None:
 
 def main() -> None:
     event_path = _env("GITHUB_EVENT_PATH")
-    base_url = os.getenv("FEISHU_BASE_URL", "https://open.feishu.cn")
+    base_url = os.getenv("FEISHU_BASE_URL") or "https://open.feishu.cn"
     app_id = _env("FEISHU_APP_ID")
     app_secret = _env("FEISHU_APP_SECRET")
     app_token = _env("FEISHU_APP_TOKEN")
